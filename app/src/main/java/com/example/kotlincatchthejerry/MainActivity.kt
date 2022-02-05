@@ -3,6 +3,7 @@ package com.example.kotlincatchthejerry
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.os.Handler
 import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
@@ -14,6 +15,8 @@ import kotlin.collections.ArrayList
 class MainActivity : AppCompatActivity() {
     var score = 0
     var imageArray = ArrayList<ImageView>()
+    var handler = Handler()
+    var runnable = Runnable { }
 
     private lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,10 +39,14 @@ class MainActivity : AppCompatActivity() {
         hideImages()
 
         //CountDown Timer
-        object : CountDownTimer(15000, 1000) {
+        object : CountDownTimer(15500, 1000) {
             override fun onFinish() {
                 binding.timeText.text = "Time: 0"
 
+                handler.removeCallbacks(runnable)
+                for(image in imageArray){
+                    image.visibility=View.INVISIBLE
+                }
                 //Alert
                 val alert = AlertDialog.Builder(this@MainActivity)
                 alert.setTitle("Game Over")
@@ -66,12 +73,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun hideImages() {
-        for (image in imageArray) {
-            image.visibility = View.INVISIBLE
+        runnable = object : Runnable {
+            override fun run() {
+                for (image in imageArray) {
+                    image.visibility = View.INVISIBLE
+                }
+                val random = Random()
+                val randomIndex = random.nextInt(9)
+                imageArray[randomIndex].visibility = View.VISIBLE
+                handler.postDelayed(runnable, 500)
+            }
+
         }
-        val random = Random()
-        val randomIndex = random.nextInt(9)
-        imageArray[randomIndex].visibility = View.VISIBLE
+        handler.post(runnable)
     }
 
     fun increaseScore(view: View) {
